@@ -1,3 +1,6 @@
-# Runtime dependencies for the directives MCP server.
-# Pinned to a compatible range; the streamable-HTTP transport requires mcp >= 1.9.
-mcp>=1.9,<2
+# Runtime dependency for the directives MCP server.
+# Exact pin of the version the image was built and verified against, so a
+# rebuild reproduces the tested image. The streamable-HTTP transport requires
+# mcp >= 1.9; bump this deliberately after re-testing.
+# (pyproject.toml keeps the abstract >=1.9,<2 range for the project metadata.)
+mcp==1.28.1

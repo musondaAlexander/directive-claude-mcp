@@ -123,19 +123,45 @@ def get_section(query: str, document: str = "AGENT.md") -> str:
         return f"Document '{document}' not found."
 
     text = path.read_text(encoding="utf-8")
-    # Split on markdown headings, keeping the heading with its body.
-    parts = [p for p in re.split(r"(?m)^(?=#{1,3} )", text) if p.strip()]
+    lines = text.splitlines(keepends=True)
+
+    # Index every level 1-3 heading with its (line number, level, text).
+    headings: list[tuple[int, int, str]] = []
+    for i, line in enumerate(lines):
+        m = re.match(r"^(#{1,3}) ", line)
+        if m:
+            headings.append((i, len(m.group(1)), line.rstrip("\n")))
+
     q = query.lower()
-    matches = [p for p in parts if q in p.splitlines()[0].lower()]
-    if not matches:
-        headings = [
-            line for line in text.splitlines() if re.match(r"^#{1,3} ", line)
-        ]
+    # For each matching heading, slice down to the next heading of the same or
+    # higher level, so a matched parent section carries its own subsections.
+    ranges: list[tuple[int, int]] = []
+    for idx, (line_no, level, heading_text) in enumerate(headings):
+        if q not in heading_text.lower():
+            continue
+        end = len(lines)
+        for next_line, next_level, _ in headings[idx + 1:]:
+            if next_level <= level:
+                end = next_line
+                break
+        ranges.append((line_no, end))
+
+    # Drop any range fully contained in another match (its parent already
+    # includes it), so parent+child matches don't duplicate content.
+    kept = [
+        (s, e)
+        for s, e in ranges
+        if not any(
+            os_ <= s and e <= oe and (os_, oe) != (s, e) for os_, oe in ranges
+        )
+    ]
+
+    if not kept:
         return (
             f"No section heading matching '{query}' in {document}.\n"
-            "Available sections:\n" + "\n".join(headings)
+            "Available sections:\n" + "\n".join(h[2] for h in headings)
         )
-    return "\n\n".join(m.rstrip() for m in matches)
+    return "\n\n".join("".join(lines[s:e]).rstrip() for s, e in kept)
 
 
 @mcp.tool()

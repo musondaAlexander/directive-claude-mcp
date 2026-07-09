@@ -54,6 +54,14 @@ async def _run() -> int:
             head = directives.content[0].text[:60].replace("\n", " ")
             print("get_directives() ->", head, "...")
 
+            # Exercise hierarchical section retrieval on the real document:
+            # a parent-section query must carry its subsections.
+            section = await session.call_tool("get_section", {"query": "modular"})
+            sec = section.content[0].text
+            carries_children = "4.1" in sec and "4.4" in sec
+            print(f"get_section('modular') -> {len(sec)} chars, "
+                  f"carries subsections: {carries_children}")
+
     print("\nOK: all expected tools reachable and responding")
     return 0
 

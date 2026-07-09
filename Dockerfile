@@ -22,8 +22,9 @@ COPY server.py .
 # In docker-compose the ./docs volume mount shadows this with your live files.
 COPY docs/ ./docs/
 
-# Drop privileges: run as an unprivileged, home-less system user.
-RUN useradd --system --no-create-home --uid 10001 appuser \
+# Drop privileges: run as an unprivileged, home-less user.
+# (Plain useradd, not --system, so uid 10001 doesn't trip the SYS_UID_MAX warning.)
+RUN useradd --no-create-home --uid 10001 appuser \
     && chown -R appuser:appuser /app
 USER appuser
 

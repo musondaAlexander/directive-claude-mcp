@@ -28,12 +28,13 @@ files between repositories.
 ```
 directives-mcp-server/
 ├── server.py            # the MCP server (FastMCP, streamable-HTTP)
-├── requirements.txt     # pinned runtime dependency (mcp)
+├── requirements.txt     # exact runtime pin used by the Docker build (mcp==1.28.1)
 ├── pyproject.toml       # project metadata + ruff config
 ├── Dockerfile           # slim, non-root image
 ├── docker-compose.yml   # one-command build + run, localhost-only
 ├── .dockerignore        # keeps the build context minimal
 ├── .gitignore
+├── .gitattributes       # pins line endings (LF for Docker/shell, CRLF for .ps1)
 ├── docs/
 │   └── AGENT.md         # THE served directives — single source of truth
 ├── test_server.py       # offline smoke tests of the tool logic
@@ -76,15 +77,27 @@ starts, so restart Claude Code (or start a new session) after registering.
 # Offline unit tests of the tool logic (runs in the built image, no network):
 docker run --rm -v "$PWD:/work" -w /work --entrypoint python \
   directives-mcp:latest test_server.py
-
-# End-to-end: connect over MCP and list/call the tools.
-# From another container against the published port:
-docker run --rm --network host -v "$PWD:/work" -w /work --entrypoint python \
-  directives-mcp:latest verify_client.py
 ```
 
-On Windows/Docker Desktop, reach the host's published port from a container
-with `MCP_URL=http://host.docker.internal:49721/mcp`.
+End-to-end — connect over MCP and list/call the tools. Pick **one** of these;
+`--network host` (Linux) and `host.docker.internal` (Docker Desktop) are
+alternatives and must not be combined:
+
+```bash
+# Simplest (any OS): run the checker directly on the host.
+pip install -r requirements.txt      # once, e.g. into a venv
+python verify_client.py
+
+# From a container — Linux hosts only (host networking reaches the published port):
+docker run --rm --network host -v "$PWD:/work" -w /work --entrypoint python \
+  directives-mcp:latest verify_client.py
+
+# From a container — Windows/macOS (Docker Desktop): use the default bridge and
+# reach the host via host.docker.internal. Do NOT add --network host here.
+docker run --rm -e MCP_URL=http://host.docker.internal:49721/mcp \
+  -v "$PWD:/work" -w /work --entrypoint python \
+  directives-mcp:latest verify_client.py
+```
 
 ## Directing Claude Code to use it
 

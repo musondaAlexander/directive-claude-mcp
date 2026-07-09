@@ -1,0 +1,9 @@
+# Normalize line endings. Enforce LF for everything that runs in Linux /
+# Docker so a Windows checkout can't break shell scripts or the Dockerfile.
+* text=auto eol=lf
+
+# PowerShell is happiest with CRLF.
+*.ps1 text eol=crlf
+
+# Never munge binaries.
+*.zip binary
