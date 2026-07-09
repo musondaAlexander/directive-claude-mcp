@@ -1,0 +1,20 @@
+[project]
+name = "directives-mcp-server"
+version = "1.0.0"
+description = "MCP server that serves engineering directives (AGENT.md) to any Claude Code instance over the streamable-HTTP transport."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = ["mcp>=1.9,<2"]
+
+[project.scripts]
+directives-server = "server:main"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+# Kept minimal on purpose: this is a single-file service, not a package tree.

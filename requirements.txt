@@ -1,0 +1,3 @@
+# Runtime dependencies for the directives MCP server.
+# Pinned to a compatible range; the streamable-HTTP transport requires mcp >= 1.9.
+mcp>=1.9,<2

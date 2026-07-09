@@ -1,0 +1,19 @@
+# Keep the build context minimal and reproducible: only what the image needs
+# (requirements.txt, server.py, docs/) is left out of this ignore list.
+.git
+.gitattributes
+.gitignore
+.dockerignore
+README.md
+pyproject.toml
+register.ps1
+register.sh
+test_server.py
+verify_client.py
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.zip
+*.log
+.env

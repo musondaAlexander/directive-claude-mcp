@@ -1,0 +1,29 @@
+name: directives-mcp
+
+services:
+  directives:
+    build: .
+    image: directives-mcp:latest
+    container_name: directives-mcp
+    ports:
+      # Uncommon high port, bound to localhost only so nothing on the
+      # network can reach it. Change the left side if 49721 is ever taken.
+      - "127.0.0.1:49721:49721"
+    volumes:
+      # Live-edit your directives without rebuilding the image (read-only).
+      - ./docs:/app/docs:ro
+    environment:
+      - DOCS_DIR=/app/docs
+      - HOST=0.0.0.0
+      - PORT=49721
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import os,socket; s=socket.socket(); s.settimeout(3); s.connect(('127.0.0.1', int(os.environ.get('PORT','49721')))); s.close()"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
